@@ -25,24 +25,27 @@ async function main() {
     writingStyle,
     articles: [],
     curated: [],
+    skimmedArticles: [],
     whatsappText: "",
-    linkedinDraft: "",
+    linkedinPosts: [],
     runId: makeRunId(),
     errors: []
   };
 
   const finalState = await graph.invoke(init);
 
-  console.log("\n✅ WhatsApp text:\n");
+  console.log("\n WhatsApp text:\n");
   console.log(finalState.whatsappText);
 
-  console.log("\n✅ LinkedIn draft:\n");
-  console.log(finalState.linkedinDraft);
+  console.log("\n LinkedIn post 1:\n");
+  console.log(finalState.linkedinPosts?.[0] ?? "(none)");
+  console.log("\n LinkedIn post 2:\n");
+  console.log(finalState.linkedinPosts?.[1] ?? "(none)");
 
   console.log(`\nSaved: output/digest-${finalState.runId}.json\n`);
 }
 
 main().catch((e) => {
-  console.error("❌ Run failed:", e);
+  console.error("Run failed:", e);
   process.exit(1);
 });

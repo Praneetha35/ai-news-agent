@@ -24,7 +24,6 @@ export async function curateNewsNode(state: DigestState): Promise<Partial<Digest
 
   const trimmed = state.articles
     .filter(a => a?.title && a?.url)
-    .slice(0, 30)
     .map(a => ({
       title: a.title,
       url: a.url,
@@ -34,17 +33,40 @@ export async function curateNewsNode(state: DigestState): Promise<Partial<Digest
     }));
 
   const prompt = `
-You are a strict AI news curator.
+You are an expert AI news curator that identifies what is currently
+"talk of the town" in AI.
 
-Goal: pick the BEST 5 items for a daily digest focused on:
-${state.niche}
+Your job:
+Select the TOP 5 MOST TRENDING and IMPORTANT AI news items.
 
-Rules:
-- Prefer: product releases, research papers, benchmarks, major infra updates, safety/regulation, major funding.
-- Avoid: fluff, vague opinion-only, duplicates, reprints, clickbait.
-- Output JSON with shape: { "items": [ ... ] }
-- Each item: { title, url, source, publishedAt, why_it_matters (1 sentence), score (0-100) }
-- Make "why_it_matters" practical, not hype.
+Focus on:
+- Major releases from OpenAI, Anthropic, Google, Meta, Apple, NVIDIA, Microsoft
+- New model launches, benchmarks, multi-agent systems, reasoning models
+- Viral announcements or industry-shifting updates
+- Anything developers and AI builders are actively discussing right now
+
+Avoid:
+- Generic opinion blogs
+- Marketing fluff
+- Low-impact articles
+- Duplicates or reprints
+
+VERY IMPORTANT:
+Pick items that feel like:
+"This is what everyone in AI Twitter/LinkedIn/dev circles is talking about today."
+
+For each selected item include:
+{
+  title,
+  url,
+  source,
+  publishedAt,
+  why_it_matters: ONE concise practical sentence explaining why developers should care,
+  score: number from 0-100 (trend + importance combined)
+}
+
+Return STRICT JSON only:
+{ "items": [...] }
 
 Articles:
 ${JSON.stringify(trimmed, null, 2)}
@@ -53,11 +75,9 @@ ${JSON.stringify(trimmed, null, 2)}
   const res = await llm.invoke(prompt);
   const raw = String(res.content ?? "").trim();
 
-  // Try to parse. If model returns text, this will throw.
   const parsed = CuratedSchema.parse(JSON.parse(raw));
   const curated: CuratedItem[] = parsed.items
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
+    .sort((a, b) => b.score - a.score);
 
   return { curated };
 }

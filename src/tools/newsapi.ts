@@ -5,7 +5,7 @@ export async function fetchFromNewsAPI(query: string): Promise<RawArticle[]> {
   if (!key) throw new Error("Missing NEWS_API_KEY in .env");
 
   const q = encodeURIComponent(query);
-  const url = `https://newsapi.org/v2/everything?q=${q}&language=en&sortBy=publishedAt&pageSize=40`;
+  const url = `https://newsapi.org/v2/everything?q=${q}&language=en&sortBy=publishedAt&pageSize=30`;
 
   const res = await fetch(url, { headers: { "X-Api-Key": key } });
   if (!res.ok) {

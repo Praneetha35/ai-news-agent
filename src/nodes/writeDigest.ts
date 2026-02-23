@@ -4,7 +4,7 @@ import { ChatOpenAI } from "@langchain/openai";
 function formatWhatsAppFallback(state: DigestState): string {
   const date = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const lines: string[] = [];
-  lines.push(`🧠 AI Digest — ${date}`);
+  lines.push(`AI Digest — ${date}`);
   lines.push("");
 
   state.curated.forEach((it, idx) => {
@@ -22,7 +22,7 @@ export async function writeDigestNode(state: DigestState): Promise<Partial<Diges
   const llm = new ChatOpenAI({
     apiKey: process.env.OPENAI_API_KEY,
     model: "gpt-4.1",
-    temperature: 0.6
+    temperature: 0.7 // slightly higher helps narrative feel more human
   });
 
   const date = new Date().toLocaleDateString("en-US", {
@@ -31,10 +31,22 @@ export async function writeDigestNode(state: DigestState): Promise<Partial<Diges
     day: "numeric"
   });
 
-  const prompt = `
-You write in MY voice.
+  const skimmed = state.skimmedArticles?.length
+    ? state.skimmedArticles
+    : state.curated.map(c => ({ title: c.title, url: c.url, keyPoints: c.why_it_matters }));
 
-My writing style:
+  const prompt = `
+Write in my narrative style (NOT copying any specific post).
+
+Style guidance:
+- Reflective, thoughtful engineering voice
+- Short flowing paragraphs (natural pacing)
+- Focus on meaning + implications, not hype
+- Conversational, human, not corporate
+- Do NOT force a rigid template
+- Do NOT copy or closely paraphrase any lines from the skimmed text; you can use facts, but rephrase everything in your own words.
+
+My writing style notes:
 ${state.writingStyle}
 
 I want TWO outputs:
@@ -46,34 +58,44 @@ A) WhatsApp digest:
 - keep it short, no essays
 - include header with date: ${date}
 
-B) LinkedIn draft:
-- 6–10 short lines
-- strong hook (first line)
-- 3 bullets with themes
-- one personal take
-- end with a question
-- include only 1-2 links max
+B) TWO LinkedIn posts (exactly 2):
+- Use the SKIMMED content below (keyPoints) as your source of substance.
+- Each post should include real specifics (names, numbers, key changes) when available.
+- Draft like a human sharing what they learned: conversational, narrative tone.
+- Vary them: different angles, different pacing/structure.
+- Each 4–8 lines.
+- 1–2 links max per post.
+- No hashtag spam (0–2 hashtags if they feel natural).
 
-Use these curated items:
-${JSON.stringify(state.curated, null, 2)}
+Skimmed articles:
+${JSON.stringify(skimmed, null, 2)}
 
-Return in this exact format:
+Return in this exact format (no extra text):
 
 ===WHATSAPP===
 <text>
 
-===LINKEDIN===
-<text>
+===LINKEDIN_POST_1===
+<complete post text>
+
+===LINKEDIN_POST_2===
+<complete post text>
 `;
 
   const res = await llm.invoke(prompt);
-  const text = String(res.content ?? "");
+  const text = String(res.content ?? "").trim();
 
-  const waMatch = text.split("===WHATSAPP===")[1]?.split("===LINKEDIN===")[0]?.trim();
-  const liMatch = text.split("===LINKEDIN===")[1]?.trim();
+  // Slightly more robust extraction (handles leading/trailing whitespace)
+  const waMatch = text.split("===WHATSAPP===")[1]?.split("===LINKEDIN_POST_1===")[0]?.trim();
+  const li1Match = text.split("===LINKEDIN_POST_1===")[1]?.split("===LINKEDIN_POST_2===")[0]?.trim();
+  const li2Match = text.split("===LINKEDIN_POST_2===")[1]?.trim();
+
+  const linkedinPosts: string[] = [];
+  if (li1Match) linkedinPosts.push(li1Match);
+  if (li2Match) linkedinPosts.push(li2Match);
 
   return {
     whatsappText: waMatch && waMatch.length > 30 ? waMatch : formatWhatsAppFallback(state),
-    linkedinDraft: liMatch ?? ""
+    linkedinPosts
   };
 }

@@ -14,8 +14,9 @@ export async function saveOutputNode(state: DigestState): Promise<Partial<Digest
         niche: state.niche,
         writingStyle: state.writingStyle,
         curated: state.curated,
+        skimmedArticles: state.skimmedArticles,
         whatsappText: state.whatsappText,
-        linkedinDraft: state.linkedinDraft,
+        linkedinPosts: state.linkedinPosts,
         errors: state.errors
       },
       null,

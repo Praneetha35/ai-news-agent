@@ -15,6 +15,12 @@ export type CuratedItem = {
   score: number; // 0-100
 };
 
+export type SkimmedItem = {
+  title: string;
+  url: string;
+  keyPoints: string;
+};
+
 export type DigestState = {
   // inputs
   niche: string;
@@ -23,10 +29,11 @@ export type DigestState = {
   // data
   articles: RawArticle[];
   curated: CuratedItem[];
+  skimmedArticles: SkimmedItem[];
 
   // outputs
   whatsappText: string;
-  linkedinDraft: string;
+  linkedinPosts: string[]; 
 
   // debug/metadata
   runId: string;
