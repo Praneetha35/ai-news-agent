@@ -43,14 +43,15 @@ export async function skimArticlesNode(state: DigestState): Promise<Partial<Dige
   - Do NOT reuse specific sentences/phrases.
   - Instead, extract underlying ideas and write them as "builder notes" in my voice.
 
-  From the article below, produce 3-5 bullets that are:
+  From the article below, produce 7-10 bullets that are:
   - concrete and specific (numbers, named products/papers/companies, policy changes, etc. if present)
   - framed as implications for builders/engineers ("what this signals", "what changes now")
   - written like notes that I could turn into a narrative post later
+  - should be technical and witty
 
   Format rules:
-  - 3-5 bullet lines only
-  - each bullet 1-2 sentences
+  - 7-10 bullet lines only
+  - each bullet 4-5 sentences 
   - no intro, no headings, no quotes
   - avoid generic summary language like "this article discusses..."
 

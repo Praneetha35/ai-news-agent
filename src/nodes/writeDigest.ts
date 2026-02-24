@@ -22,7 +22,7 @@ export async function writeDigestNode(state: DigestState): Promise<Partial<Diges
   const llm = new ChatOpenAI({
     apiKey: process.env.OPENAI_API_KEY,
     model: "gpt-4.1",
-    temperature: 0.7 // slightly higher helps narrative feel more human
+    temperature: 0.7 
   });
 
   const date = new Date().toLocaleDateString("en-US", {
@@ -63,9 +63,9 @@ B) TWO LinkedIn posts (exactly 2):
 - Each post should include real specifics (names, numbers, key changes) when available.
 - Draft like a human sharing what they learned: conversational, narrative tone.
 - Vary them: different angles, different pacing/structure.
-- Each 4–8 lines.
-- 1–2 links max per post.
-- No hashtag spam (0–2 hashtags if they feel natural).
+- Each 7-10 lines.
+- 1-2 links max per post.
+- No hashtag spam (0-2 hashtags if they feel natural).
 
 Skimmed articles:
 ${JSON.stringify(skimmed, null, 2)}
@@ -85,7 +85,6 @@ Return in this exact format (no extra text):
   const res = await llm.invoke(prompt);
   const text = String(res.content ?? "").trim();
 
-  // Slightly more robust extraction (handles leading/trailing whitespace)
   const waMatch = text.split("===WHATSAPP===")[1]?.split("===LINKEDIN_POST_1===")[0]?.trim();
   const li1Match = text.split("===LINKEDIN_POST_1===")[1]?.split("===LINKEDIN_POST_2===")[0]?.trim();
   const li2Match = text.split("===LINKEDIN_POST_2===")[1]?.trim();
