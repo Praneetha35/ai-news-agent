@@ -151,7 +151,7 @@ If you’re building in that direction, the current graph and `output/digest-*.j
 
 1. **Clone and install**
    ```bash
-   cd ai-news-agent/src
+   cd ai-automation-pipeline/src
    npm install
    ```
 
