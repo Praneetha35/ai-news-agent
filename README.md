@@ -1,6 +1,6 @@
-# AI News Agent: From Headlines to Your Inbox (and LinkedIn)
+# AI Automation Pipeline for Content Creation: From Headlines to Your Inbox
 
-*How I built a pipeline that turns the day’s AI news into a personal digest and ready-to-post content — built for content creators who want to show up daily without the grind.*
+*How I built a pipeline that turns the day’s AI news into a personal digest and ready-to-post content and why you might want one too.*
 
 ---
 
@@ -24,7 +24,7 @@ So I built an **AI News Agent**: a single pipeline that does all of that in one 
 
 **Purpose:** Save time and keep a consistent “voice” across digest and social. The agent does the gathering and first draft; you do the final read and the click.
 
-**For content creators:** If you’re trying to post daily — on LinkedIn, a newsletter, or elsewhere — this pipeline gives you a steady supply of on-topic, in-your-voice drafts. Run it once a day (or on a schedule), and you get a digest plus two LinkedIn-ready posts without staring at a blank screen. It’s built for people who want to show up consistently without burning out on research and first drafts.
+**For content creators:** If you’re trying to post daily — on LinkedIn, a newsletter, or elsewhere, this pipeline gives you a steady supply of on-topic, in-your-voice drafts. It’s built for people who want to show up consistently without burning out on research and first drafts.
 
 ---
 
@@ -41,9 +41,7 @@ The agent is a **LangGraph** state machine: one entry point, a fixed sequence of
   (raw articles)  top 5         key points     digest + 2 posts        API           digest-*.json
 ```
 
-**Flow in one sentence:** Fetch articles → curate top 5 → skim each for key points → write WhatsApp digest + 2 LinkedIn posts → send to WhatsApp → save to disk.
-
-**Where it lands today:** At the end of the pipeline, the digest (and LinkedIn-style posts) are sent to **WhatsApp** — that’s the delivery target for now. You get the same content in the console and in `output/digest-*.json`, but the main “delivery” is your WhatsApp. Later you can add LinkedIn drafts, email, or other channels.
+**Flow in one sentence:** Fetch articles → curate top 5 → skim each for key points → write WhatsApp digest + 2 LinkedIn posts → send digest/posts to WhatsApp → save everything to disk.
 
 Each step reads from and writes into a shared **DigestState** (niche, writing style, articles, curated list, skimmed items, whatsappText, linkedinPosts, runId, errors). No separate services or queues — one process, one graph, one run.
 
@@ -131,7 +129,6 @@ This step is what turns “30 articles” into “the 5 that actually matter tod
 - **Your voice everywhere** — Set `WRITING_STYLE` (e.g. “direct, practical, slightly witty, no corporate tone”). The writer and skimmer both use it so WhatsApp and LinkedIn stay on-brand.
 - **Console-only runs** — Omit WhatsApp env vars if you don’t want to send. The pipeline will throw at **send_whatsapp** when it tries to send; to make it optional you could add a “if no WhatsApp config, skip send” branch and still get digest + LinkedIn in console and in **output/**.
 - **LinkedIn-first** — The send step currently prefers **linkedinPosts** over whatsappText when both exist. So you can treat the run as “generate two LinkedIn posts and also send them to me on WhatsApp.”
-- **Daily content creators** — Run the agent once a day (manually or via cron). You get a fresh digest and two LinkedIn posts every time, so you always have something to review and post. No more “what do I write about today?”
 - **Scheduled digest** — Use the built-in scheduler: `npm run schedule` runs the pipeline once on startup and then every day at **8:00 AM** (or set `SCHEDULE_CRON` for a custom time). No system cron needed.
 - **Repurposing** — Use **output/digest-*.json** to drive a simple site, newsletter, or Slack bot: the structured curated + skimmed + final copy is already there.
 
@@ -139,9 +136,9 @@ This step is what turns “30 articles” into “the 5 that actually matter tod
 
 ## What’s next (future ideas)
 
-The pipeline today ends at **save** (and optionally WhatsApp). Down the road, automation could go further:
+The pipeline today ends at **save** (and into your WhatsApp). Down the road, automation could go further:
 
-- **LinkedIn draft posts** — Push the two generated posts into your LinkedIn draft queue via API or integration, so they’re waiting in the app for you to review and hit “Post.”
+- **LinkedIn draft posts** — Push the generated posts into your LinkedIn draft queue via API or integration, so they’re waiting in the app for you to review and hit “Post.”
 - **More channels** — Same digest and posts could be sent to Twitter/X, a newsletter (e.g. Substack), Notion, or a custom CMS. The output is already structured; adding nodes or scripts to post elsewhere is the next step.
 - **Full automation** — Schedule the run, auto-save to drafts or a content calendar, and optionally auto-publish at a set time once you’re comfortable with the quality.
 
@@ -176,26 +173,12 @@ If you’re building in that direction, the current graph and `output/digest-*.j
    ```
    You’ll see the WhatsApp digest and two LinkedIn posts in the console, and a file under `output/digest-{runId}.json`. If WhatsApp is configured, the send step will run after write.
 
-4. **Run on a schedule (e.g. 8 AM every morning)**
-   ```bash
-   npm run schedule
-   ```
-   The process runs the digest **once immediately**, then again every day at **8:00 AM** (in your machine’s local time). Leave it running in the background (or in a terminal/screen/tmux); it will keep firing at the same time each day.
-
-   To change the time, set `SCHEDULE_CRON` in `.env` using a 5-field cron expression:
-   - `0 8 * * *` — 8:00 AM every day (default)
-   - `0 7 * * 1-5` — 7:00 AM on weekdays
-   - `30 6 * * *` — 6:30 AM every day
-
-   Format: `minute hour day-of-month month day-of-week`. Press Ctrl+C to stop the scheduler.
-
 ---
 
 ## Conclusion
 
-The AI News Agent is a single pipeline: **fetch → curate → skim → write → send → save**. At the end, it goes into **WhatsApp** — that’s the thing for now. It doesn’t try to replace your judgment; it narrows the firehose to a few stories, pulls out the builder-relevant bits, and drafts in your voice so you can read the digest in 60 seconds on your phone (or use the saved JSON and LinkedIn drafts however you like).
+The AI News Agent is a single pipeline: **fetch → curate → skim → write → send → save**. It doesn’t try to replace your judgment — it narrows the firehose to a few stories, pulls out the builder-relevant bits, and drafts in your voice so you can read in 60 seconds and post without starting from a blank page.
 
-If you’re the kind of person who wants “today’s AI news” as a short digest and two LinkedIn posts — or you’re a content creator aiming to post daily without the grind — this is the structure that gets you there. Swap the niche, tweak the style, add a cron job or a second output channel; later, plug in LinkedIn drafts or other platforms and you’ve got a pattern that scales beyond this one repo.
 
 ---
 
