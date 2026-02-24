@@ -1,6 +1,6 @@
 # AI News Agent: From Headlines to Your Inbox (and LinkedIn)
 
-*How I built a pipeline that turns the day’s AI news into a personal digest and ready-to-post content — and why you might want one too.*
+*How I built a pipeline that turns the day’s AI news into a personal digest and ready-to-post content — built for content creators who want to show up daily without the grind.*
 
 ---
 
@@ -24,6 +24,8 @@ So I built an **AI News Agent**: a single pipeline that does all of that in one 
 
 **Purpose:** Save time and keep a consistent “voice” across digest and social. The agent does the gathering and first draft; you do the final read and the click.
 
+**For content creators:** If you’re trying to post daily — on LinkedIn, a newsletter, or elsewhere — this pipeline gives you a steady supply of on-topic, in-your-voice drafts. Run it once a day (or on a schedule), and you get a digest plus two LinkedIn-ready posts without staring at a blank screen. It’s built for people who want to show up consistently without burning out on research and first drafts.
+
 ---
 
 ## The pipeline
@@ -32,7 +34,7 @@ The agent is a **LangGraph** state machine: one entry point, a fixed sequence of
 
 ```
 ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌──────────────┐    ┌─────────┐
-│  fetch  │───▶│ curate  │───▶│  skim   │───▶│  write  │───▶│ send_whatsapp│───▶│  save   │
+│  fetch  │───▶│ curate  │───▶│  skim   │───▶│  write  │───▶│ send_whatsapp │───▶│  save   │
 └─────────┘    └─────────┘    └─────────┘    └─────────┘    └──────────────┘    └─────────┘
      │               │              │              │                    │               │
   News API       LLM pick       Jina + LLM     GPT-4 narrative     WhatsApp Cloud    output/
@@ -127,8 +129,21 @@ This step is what turns “30 articles” into “the 5 that actually matter tod
 - **Your voice everywhere** — Set `WRITING_STYLE` (e.g. “direct, practical, slightly witty, no corporate tone”). The writer and skimmer both use it so WhatsApp and LinkedIn stay on-brand.
 - **Console-only runs** — Omit WhatsApp env vars if you don’t want to send. The pipeline will throw at **send_whatsapp** when it tries to send; to make it optional you could add a “if no WhatsApp config, skip send” branch and still get digest + LinkedIn in console and in **output/**.
 - **LinkedIn-first** — The send step currently prefers **linkedinPosts** over whatsappText when both exist. So you can treat the run as “generate two LinkedIn posts and also send them to me on WhatsApp.”
-- **Scheduled digest** — Run the agent on a cron (e.g. `0 8 * * *` for 8 AM). Same code; you get a daily digest and two posts without opening a feed.
+- **Daily content creators** — Run the agent once a day (manually or via cron). You get a fresh digest and two LinkedIn posts every time, so you always have something to review and post. No more “what do I write about today?”
+- **Scheduled digest** — Use the built-in scheduler: `npm run schedule` runs the pipeline once on startup and then every day at **8:00 AM** (or set `SCHEDULE_CRON` for a custom time). No system cron needed.
 - **Repurposing** — Use **output/digest-*.json** to drive a simple site, newsletter, or Slack bot: the structured curated + skimmed + final copy is already there.
+
+---
+
+## What’s next (future ideas)
+
+The pipeline today ends at **save** (and optionally WhatsApp). Down the road, automation could go further:
+
+- **LinkedIn draft posts** — Push the two generated posts into your LinkedIn draft queue via API or integration, so they’re waiting in the app for you to review and hit “Post.”
+- **More channels** — Same digest and posts could be sent to Twitter/X, a newsletter (e.g. Substack), Notion, or a custom CMS. The output is already structured; adding nodes or scripts to post elsewhere is the next step.
+- **Full automation** — Schedule the run, auto-save to drafts or a content calendar, and optionally auto-publish at a set time once you’re comfortable with the quality.
+
+If you’re building in that direction, the current graph and `output/digest-*.json` are a good base to plug into LinkedIn’s API, Zapier, or your own automation layer.
 
 ---
 
@@ -159,13 +174,26 @@ This step is what turns “30 articles” into “the 5 that actually matter tod
    ```
    You’ll see the WhatsApp digest and two LinkedIn posts in the console, and a file under `output/digest-{runId}.json`. If WhatsApp is configured, the send step will run after write.
 
+4. **Run on a schedule (e.g. 8 AM every morning)**
+   ```bash
+   npm run schedule
+   ```
+   The process runs the digest **once immediately**, then again every day at **8:00 AM** (in your machine’s local time). Leave it running in the background (or in a terminal/screen/tmux); it will keep firing at the same time each day.
+
+   To change the time, set `SCHEDULE_CRON` in `.env` using a 5-field cron expression:
+   - `0 8 * * *` — 8:00 AM every day (default)
+   - `0 7 * * 1-5` — 7:00 AM on weekdays
+   - `30 6 * * *` — 6:30 AM every day
+
+   Format: `minute hour day-of-month month day-of-week`. Press Ctrl+C to stop the scheduler.
+
 ---
 
 ## Conclusion
 
 The AI News Agent is a single pipeline: **fetch → curate → skim → write → send → save**. It doesn’t try to replace your judgment — it narrows the firehose to a few stories, pulls out the builder-relevant bits, and drafts in your voice so you can read in 60 seconds and post without starting from a blank page.
 
-If you’re the kind of person who wants “today’s AI news” as a short digest and two LinkedIn posts, this is the structure that gets you there. Swap the niche, tweak the style, add a cron job or a second output channel, and you’ve got a pattern that scales beyond this one repo.
+If you’re the kind of person who wants “today’s AI news” as a short digest and two LinkedIn posts — or you’re a content creator aiming to post daily without the grind — this is the structure that gets you there. Swap the niche, tweak the style, add a cron job or a second output channel; later, plug in LinkedIn drafts or other platforms and you’ve got a pattern that scales beyond this one repo.
 
 ---
 
