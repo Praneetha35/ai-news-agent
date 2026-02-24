@@ -41,7 +41,9 @@ The agent is a **LangGraph** state machine: one entry point, a fixed sequence of
   (raw articles)  top 5         key points     digest + 2 posts        API           digest-*.json
 ```
 
-**Flow in one sentence:** Fetch articles → curate top 5 → skim each for key points → write WhatsApp digest + 2 LinkedIn posts → send digest/posts to WhatsApp → save everything to disk.
+**Flow in one sentence:** Fetch articles → curate top 5 → skim each for key points → write WhatsApp digest + 2 LinkedIn posts → send to WhatsApp → save to disk.
+
+**Where it lands today:** At the end of the pipeline, the digest (and LinkedIn-style posts) are sent to **WhatsApp** — that’s the delivery target for now. You get the same content in the console and in `output/digest-*.json`, but the main “delivery” is your WhatsApp. Later you can add LinkedIn drafts, email, or other channels.
 
 Each step reads from and writes into a shared **DigestState** (niche, writing style, articles, curated list, skimmed items, whatsappText, linkedinPosts, runId, errors). No separate services or queues — one process, one graph, one run.
 
@@ -191,7 +193,7 @@ If you’re building in that direction, the current graph and `output/digest-*.j
 
 ## Conclusion
 
-The AI News Agent is a single pipeline: **fetch → curate → skim → write → send → save**. It doesn’t try to replace your judgment — it narrows the firehose to a few stories, pulls out the builder-relevant bits, and drafts in your voice so you can read in 60 seconds and post without starting from a blank page.
+The AI News Agent is a single pipeline: **fetch → curate → skim → write → send → save**. At the end, it goes into **WhatsApp** — that’s the thing for now. It doesn’t try to replace your judgment; it narrows the firehose to a few stories, pulls out the builder-relevant bits, and drafts in your voice so you can read the digest in 60 seconds on your phone (or use the saved JSON and LinkedIn drafts however you like).
 
 If you’re the kind of person who wants “today’s AI news” as a short digest and two LinkedIn posts — or you’re a content creator aiming to post daily without the grind — this is the structure that gets you there. Swap the niche, tweak the style, add a cron job or a second output channel; later, plug in LinkedIn drafts or other platforms and you’ve got a pattern that scales beyond this one repo.
 
