@@ -1,4 +1,4 @@
-# AI Automation Pipeline for Content Creation: From Headlines to Your Inbox
+# AI Automation Pipeline for Content Creation
 
 *How I built a pipeline that turns the day’s AI news into a personal digest and ready-to-post content and why you might want one too.*
 
