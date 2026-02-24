@@ -34,14 +34,14 @@ The agent is a **LangGraph** state machine: one entry point, a fixed sequence of
 
 ```
 ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌──────────────┐    ┌─────────┐
-│  fetch  │───▶│ curate  │───▶│  skim   │───▶│  write  │───▶│ send_whatsapp │───▶│  save   │
+│  fetch  │───▶│ curate  │───▶│  skim   │───▶│  write  │───▶│ send_whatsapp│───▶│  save   │
 └─────────┘    └─────────┘    └─────────┘    └─────────┘    └──────────────┘    └─────────┘
      │               │              │              │                    │               │
   News API       LLM pick       Jina + LLM     GPT-4 narrative     WhatsApp Cloud    output/
-  (raw articles)  top 5         key points     digest + 2 posts        API           digest-*.json
+  (raw articles)  top 5         key points     posts               API           digest-*.json
 ```
 
-**Flow in one sentence:** Fetch articles → curate top 5 → skim each for key points → write WhatsApp digest + 2 LinkedIn posts → send digest/posts to WhatsApp → save everything to disk.
+**Flow in one sentence:** Fetch articles → curate top 5 → skim each for key points → write posts → send posts to WhatsApp → save everything to disk.
 
 Each step reads from and writes into a shared **DigestState** (niche, writing style, articles, curated list, skimmed items, whatsappText, linkedinPosts, runId, errors). No separate services or queues — one process, one graph, one run.
 
@@ -125,12 +125,11 @@ This step is what turns “30 articles” into “the 5 that actually matter tod
 
 ## What you can do with it (other use cases)
 
-- **Different niches** — Set `DIGEST_NICHE` (e.g. `"climate tech"`, `"developer tools"`) and optionally adjust the fetch query in code. Same pipeline, different topic.
-- **Your voice everywhere** — Set `WRITING_STYLE` (e.g. “direct, practical, slightly witty, no corporate tone”). The writer and skimmer both use it so WhatsApp and LinkedIn stay on-brand.
-- **Console-only runs** — Omit WhatsApp env vars if you don’t want to send. The pipeline will throw at **send_whatsapp** when it tries to send; to make it optional you could add a “if no WhatsApp config, skip send” branch and still get digest + LinkedIn in console and in **output/**.
-- **LinkedIn-first** — The send step currently prefers **linkedinPosts** over whatsappText when both exist. So you can treat the run as “generate two LinkedIn posts and also send them to me on WhatsApp.”
-- **Scheduled digest** — Use the built-in scheduler: `npm run schedule` runs the pipeline once on startup and then every day at **8:00 AM** (or set `SCHEDULE_CRON` for a custom time). No system cron needed.
-- **Repurposing** — Use **output/digest-*.json** to drive a simple site, newsletter, or Slack bot: the structured curated + skimmed + final copy is already there.
+- **Different niches** - Set `DIGEST_NICHE` (e.g. `"climate tech"`, `"developer tools"`) and optionally adjust the fetch query in code. Same pipeline, different topic.
+- **Your voice everywhere** - Set `WRITING_STYLE` (e.g. “direct, practical, slightly witty, no corporate tone”). The writer and skimmer both use it so WhatsApp and LinkedIn stay on-brand.
+- **Console-only runs** - Omit WhatsApp env vars if you don’t want to send. The pipeline will throw at **send_whatsapp** when it tries to send; to make it optional you could add a “if no WhatsApp config, skip send” branch and still get digest + LinkedIn in console and in **output/**.
+- **LinkedIn-first** - The send step currently prefers **linkedinPosts** over whatsappText when both exist. So you can treat the run as “generate two LinkedIn posts and also send them to me on WhatsApp.”
+- **Repurposing** - Use **output/digest-*.json** to drive a simple site, newsletter, or Slack bot: the structured curated + skimmed + final copy is already there.
 
 ---
 
@@ -138,9 +137,9 @@ This step is what turns “30 articles” into “the 5 that actually matter tod
 
 The pipeline today ends at **save** (and into your WhatsApp). Down the road, automation could go further:
 
-- **LinkedIn draft posts** — Push the generated posts into your LinkedIn draft queue via API or integration, so they’re waiting in the app for you to review and hit “Post.”
-- **More channels** — Same digest and posts could be sent to Twitter/X, a newsletter (e.g. Substack), Notion, or a custom CMS. The output is already structured; adding nodes or scripts to post elsewhere is the next step.
-- **Full automation** — Schedule the run, auto-save to drafts or a content calendar, and optionally auto-publish at a set time once you’re comfortable with the quality.
+- **LinkedIn draft posts** - Push the generated posts into your LinkedIn draft queue via API or integration, so they’re waiting in the app for you to review and hit “Post.”
+- **More channels** - Same digest and posts could be sent to Twitter/X, a newsletter (e.g. Substack), Notion, or a custom CMS. The output is already structured; adding nodes or scripts to post elsewhere is the next step.
+- **Full automation** - Schedule the run, auto-save to drafts or a content calendar, and optionally auto-publish at a set time once you’re comfortable with the quality.
 
 If you’re building in that direction, the current graph and `output/digest-*.json` are a good base to plug into LinkedIn’s API, Zapier, or your own automation layer.
 
@@ -158,13 +157,13 @@ If you’re building in that direction, the current graph and `output/digest-*.j
 
 2. **Environment**
    Create a `.env` in `src/` with at least:
-   - `NEWS_API_KEY` — [newsapi.org](https://newsapi.org)
-   - `OPENAI_API_KEY` — for curate, skim, and write
+   - `NEWS_API_KEY` - [newsapi.org](https://newsapi.org)
+   - `OPENAI_API_KEY` - for curate, skim, and write
    - Optional for WhatsApp: `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_TO_PHONE`
 
    Optional tuning:
-   - `DIGEST_NICHE` — default `"AI news"`
-   - `WRITING_STYLE` — default `"direct, practical, slightly witty, no corporate tone, short punchy lines"`
+   - `DIGEST_NICHE` - default `"AI news"`
+   - `WRITING_STYLE` - default `"direct, practical, slightly witty, no corporate tone, short punchy lines"`
 
 3. **Run**
    ```bash
@@ -177,7 +176,7 @@ If you’re building in that direction, the current graph and `output/digest-*.j
 
 ## Conclusion
 
-The AI News Agent is a single pipeline: **fetch → curate → skim → write → send → save**. It doesn’t try to replace your judgment — it narrows the firehose to a few stories, pulls out the builder-relevant bits, and drafts in your voice so you can read in 60 seconds and post without starting from a blank page.
+The AI News Agent is a single pipeline: **fetch → curate → skim → write → send → save**. It doesn’t try to replace your judgment, it narrows the firehose to a few stories, pulls out the builder-relevant bits, and drafts in your voice so you can read in 60 seconds and post without starting from a blank page.
 
 
 ---
